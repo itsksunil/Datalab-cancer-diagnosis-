@@ -1,122 +1,146 @@
 import streamlit as st
 
-st.title("Cancer Symptom Checker")
-st.write("Get possible cancer risks based on age, gender, history, location, and symptoms.")
+# -------------------------------
+# Unified Symptom List
+# -------------------------------
+all_symptoms = [
+    # Prostate
+    "Frequent need to urinate, especially at night",
+    "Difficulty urinating (hesitancy or interrupted flow)",
+    "Weak or slow urine stream",
+    "Pain or burning during urination",
+    "Blood in urine or semen",
+    "Painful ejaculation",
+    "Pain in the back, hips, or pelvis that doesn't go away",
 
-# ---- Patient Info ----
-name = st.text_input("Name")
-age = st.number_input("Age", min_value=1, max_value=120)
-gender = st.selectbox("Gender", ["Male", "Female", "Other"])
-location = st.text_input("City / Location")
-family_history = st.selectbox("Family history of cancer?", ["No", "Yes", "Don't know"])
-bp = st.checkbox("High Blood Pressure")
-diabetes = st.checkbox("Diabetes")
-heart = st.checkbox("Heart Issues")
+    # Lung
+    "Persistent cough that gets worse or won't go away",
+    "Coughing up blood or rust-colored sputum",
+    "Shortness of breath or wheezing",
+    "Chest pain worse with deep breathing, coughing, or laughing",
+    "Hoarseness or a change in voice",
+    "Unexplained weight loss",
+    "Loss of appetite",
+    "Constant fatigue",
 
-st.markdown("---")
+    # Mouth
+    "Sore, irritation, lump, or thick patch in mouth, lip, or throat that does not heal",
+    "White or reddish patches in mouth",
+    "Pain, tenderness, or numbness in mouth or lips",
+    "Difficulty chewing or swallowing",
+    "Feeling that something is caught in the throat",
+    "Voice changes",
 
-# ---- Symptoms by Gender ----
-st.header("Select Symptoms")
+    # Pancreatic
+    "Jaundice (yellowing of skin/eyes)",
+    "Dark urine or light/greasy stools",
+    "Abdominal or back pain",
+    "Fatigue",
+    "Nausea or vomiting",
+    "New-onset diabetes",
 
-symptoms = []
+    # Blood
+    "Fever, chills, or night sweats",
+    "Persistent fatigue or weakness",
+    "Frequent or severe infections",
+    "Easy bruising or bleeding",
+    "Swollen lymph nodes",
+    "Bone or joint pain",
+    "Feeling full after eating very little",
 
-# ----- Male-specific cancers -----
-if gender == "Male":
-    st.subheader("Male-specific cancers")
+    # Brain
+    "New or changing headaches",
+    "Seizures",
+    "Nausea or vomiting",
+    "Vision problems",
+    "Gradual loss of sensation or movement in limb",
+    "Difficulty with balance or walking",
+    "Speech difficulties",
+    "Changes in personality, behavior, or concentration"
+]
 
-    with st.expander("Prostate Cancer"):
-        if st.checkbox("Frequent urination, especially at night"): symptoms.append("prostate")
-        if st.checkbox("Difficulty urinating / weak stream"): symptoms.append("prostate")
-        if st.checkbox("Blood in urine or semen"): symptoms.append("prostate")
-        if st.checkbox("Pelvic/back pain"): symptoms.append("prostate")
+# -------------------------------
+# Mapping Symptoms to Cancer Types
+# -------------------------------
+symptom_to_cancer = {
+    # Prostate
+    "Frequent need to urinate, especially at night": "Prostate Cancer",
+    "Difficulty urinating (hesitancy or interrupted flow)": "Prostate Cancer",
+    "Weak or slow urine stream": "Prostate Cancer",
+    "Pain or burning during urination": "Prostate Cancer",
+    "Blood in urine or semen": "Prostate Cancer",
+    "Painful ejaculation": "Prostate Cancer",
+    "Pain in the back, hips, or pelvis that doesn't go away": "Prostate Cancer",
 
-    with st.expander("Mouth Cancer"):
-        if st.checkbox("Non-healing mouth sore"): symptoms.append("mouth")
-        if st.checkbox("White/red patches in mouth"): symptoms.append("mouth")
-        if st.checkbox("Difficulty swallowing"): symptoms.append("mouth")
-        if st.checkbox("Voice changes / throat lump"): symptoms.append("mouth")
+    # Lung
+    "Persistent cough that gets worse or won't go away": "Lung Cancer",
+    "Coughing up blood or rust-colored sputum": "Lung Cancer",
+    "Shortness of breath or wheezing": "Lung Cancer",
+    "Chest pain worse with deep breathing, coughing, or laughing": "Lung Cancer",
+    "Hoarseness or a change in voice": "Lung Cancer",
+    "Unexplained weight loss": "Lung Cancer",
+    "Loss of appetite": "Lung Cancer",
+    "Constant fatigue": "Lung Cancer",
 
-# ----- Female-specific cancers -----
-if gender == "Female":
-    st.subheader("Female-specific cancers")
+    # Mouth
+    "Sore, irritation, lump, or thick patch in mouth, lip, or throat that does not heal": "Mouth Cancer",
+    "White or reddish patches in mouth": "Mouth Cancer",
+    "Pain, tenderness, or numbness in mouth or lips": "Mouth Cancer",
+    "Difficulty chewing or swallowing": "Mouth Cancer",
+    "Feeling that something is caught in the throat": "Mouth Cancer",
+    "Voice changes": "Mouth Cancer",
 
-    with st.expander("Breast Cancer"):
-        if st.checkbox("Breast lump or thickening"): symptoms.append("breast")
-        if st.checkbox("Change in breast size or shape"): symptoms.append("breast")
-        if st.checkbox("Nipple discharge or bleeding"): symptoms.append("breast")
-        if st.checkbox("Skin dimpling or redness on breast"): symptoms.append("breast")
+    # Pancreatic
+    "Jaundice (yellowing of skin/eyes)": "Pancreatic Cancer",
+    "Dark urine or light/greasy stools": "Pancreatic Cancer",
+    "Abdominal or back pain": "Pancreatic Cancer",
+    "Fatigue": "Pancreatic Cancer",
+    "Nausea or vomiting": "Pancreatic Cancer",
+    "New-onset diabetes": "Pancreatic Cancer",
 
-    with st.expander("Cervical Cancer"):
-        if st.checkbox("Abnormal vaginal bleeding or discharge"): symptoms.append("cervical")
-        if st.checkbox("Pelvic pain"): symptoms.append("cervical")
-        if st.checkbox("Pain during intercourse"): symptoms.append("cervical")
+    # Blood
+    "Fever, chills, or night sweats": "Blood Cancer",
+    "Persistent fatigue or weakness": "Blood Cancer",
+    "Frequent or severe infections": "Blood Cancer",
+    "Easy bruising or bleeding": "Blood Cancer",
+    "Swollen lymph nodes": "Blood Cancer",
+    "Bone or joint pain": "Blood Cancer",
+    "Feeling full after eating very little": "Blood Cancer",
 
-    with st.expander("Ovarian Cancer"):
-        if st.checkbox("Abdominal bloating or swelling"): symptoms.append("ovarian")
-        if st.checkbox("Feeling full quickly when eating"): symptoms.append("ovarian")
-        if st.checkbox("Frequent urination"): symptoms.append("ovarian")
-        if st.checkbox("Pelvic pain or pressure"): symptoms.append("ovarian")
+    # Brain
+    "New or changing headaches": "Brain Cancer",
+    "Seizures": "Brain Cancer",
+    "Nausea or vomiting": "Brain Cancer",
+    "Vision problems": "Brain Cancer",
+    "Gradual loss of sensation or movement in limb": "Brain Cancer",
+    "Difficulty with balance or walking": "Brain Cancer",
+    "Speech difficulties": "Brain Cancer",
+    "Changes in personality, behavior, or concentration": "Brain Cancer"
+}
 
-# ----- Common to both genders -----
-st.subheader("Cancers common to all genders")
+# -------------------------------
+# Streamlit UI
+# -------------------------------
+st.title("🧬 Cancer Symptom Checker")
+st.write("Select the symptoms you are experiencing. After selecting, click 'Show Possible Cancer Types'.")
 
-with st.expander("Lung Cancer"):
-    if st.checkbox("Persistent cough / worsening cough"): symptoms.append("lung")
-    if st.checkbox("Coughing up blood"): symptoms.append("lung")
-    if st.checkbox("Shortness of breath / wheezing"): symptoms.append("lung")
-    if st.checkbox("Chest pain"): symptoms.append("lung")
-    if st.checkbox("Hoarseness / voice change"): symptoms.append("lung")
+selected_symptoms = st.multiselect("Select your symptoms", all_symptoms)
 
-with st.expander("Pancreatic Cancer"):
-    if st.checkbox("Jaundice (yellow skin/eyes)"): symptoms.append("pancreatic")
-    if st.checkbox("Abdominal/back pain"): symptoms.append("pancreatic")
-    if st.checkbox("Unexplained weight loss"): symptoms.append("pancreatic")
-    if st.checkbox("New diabetes onset"): symptoms.append("pancreatic")
-
-with st.expander("Blood Cancer"):
-    if st.checkbox("Night sweats / fever / chills"): symptoms.append("blood")
-    if st.checkbox("Frequent infections"): symptoms.append("blood")
-    if st.checkbox("Easy bruising/bleeding"): symptoms.append("blood")
-    if st.checkbox("Swollen lymph nodes"): symptoms.append("blood")
-    if st.checkbox("Bone pain"): symptoms.append("blood")
-
-with st.expander("Brain Cancer"):
-    if st.checkbox("Frequent/worsening headaches"): symptoms.append("brain")
-    if st.checkbox("Seizures"): symptoms.append("brain")
-    if st.checkbox("Vision problems"): symptoms.append("brain")
-    if st.checkbox("Balance/coordination issues"): symptoms.append("brain")
-    if st.checkbox("Personality or memory changes"): symptoms.append("brain")
-
-# ---- Risk Calculation ----
-def predict_cancer(symptoms, age, gender, family_history, location):
-    cancer_count = {}
-    for s in symptoms:
-        cancer_count[s] = cancer_count.get(s, 0) + 1
-
-    # Add modifiers
-    risk_score = 0
-    if age > 50: risk_score += 1
-    if family_history == "Yes": risk_score += 2
-    if "delhi" in location.lower() or "kanpur" in location.lower():
-        risk_score += 1  # polluted cities
-    if any(x in location.lower() for x in ["varanasi","patna","kolkata","lucknow"]):
-        risk_score += 1  # ganga belt risk
-
-    return cancer_count, risk_score
-
-if st.button("Predict Possible Cancer Type"):
-    cancers, score = predict_cancer(symptoms, age, gender, family_history, location)
-    
-    if not cancers:
-        st.warning("No significant cancer-related symptoms selected.")
+# Prediction Logic
+if st.button("🔍 Show Possible Cancer Types"):
+    if not selected_symptoms:
+        st.warning("Please select at least one symptom.")
     else:
-        st.subheader(f"Prediction for {name}")
-        st.write("### Possible Cancer Types (based on symptoms):")
-        for c, count in sorted(cancers.items(), key=lambda x: x[1], reverse=True):
-            st.write(f"- {c.capitalize()} (symptom matches: {count})")
+        # Map selected symptoms to cancer types
+        cancer_count = {}
+        for s in selected_symptoms:
+            c_type = symptom_to_cancer.get(s)
+            if c_type:
+                cancer_count[c_type] = cancer_count.get(c_type, 0) + 1
         
-        if score <= 2: risk = "Low Risk"
-        elif score <= 4: risk = "Medium Risk"
-        else: risk = "High Risk"
-        
-        st.success(f"Overall Risk Level: {risk}")
+        if cancer_count:
+            st.success("### Possible Cancer Types Based on Your Symptoms:")
+            for cancer, count in sorted(cancer_count.items(), key=lambda x: x[1], reverse=True):
+                st.write(f"- **{cancer}** (matching symptoms: {count})")
+        else:
+            st.info("No strong cancer indicators detected. Please consult a doctor if symptoms persist.")
