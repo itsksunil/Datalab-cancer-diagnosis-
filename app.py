@@ -1,122 +1,122 @@
 import streamlit as st
-from fpdf import FPDF
 
-# -------------------------------
-# Cancer Symptoms Database
-# -------------------------------
-male_cancers = {
-    "Prostate Cancer": [
-        "Frequent urination", "Difficulty urinating", "Blood in urine", "Painful ejaculation", "Pelvic pain"
-    ],
-    "Lung Cancer": [
-        "Persistent cough", "Coughing up blood", "Shortness of breath", "Chest pain", "Hoarseness", "Unexplained weight loss"
-    ],
-    "Mouth Cancer": [
-        "Mouth sore", "White/red patches in mouth", "Difficulty swallowing", "Voice changes"
-    ],
-    "Pancreatic Cancer": [
-        "Jaundice", "Abdominal pain", "Back pain", "Unexplained weight loss", "Nausea", "New diabetes"
-    ],
-    "Blood Cancer": [
-        "Fever", "Night sweats", "Frequent infections", "Easy bruising", "Swollen lymph nodes", "Bone pain"
-    ],
-    "Brain Cancer": [
-        "Severe headaches", "Seizures", "Vision problems", "Balance issues", "Speech problems", "Personality changes"
-    ]
-}
+st.title("Cancer Symptom Checker")
+st.write("Get possible cancer risks based on age, gender, history, location, and symptoms.")
 
-female_cancers = {
-    "Breast Cancer": [
-        "Lump in breast", "Nipple discharge", "Breast pain", "Skin dimpling", "Change in breast size"
-    ],
-    "Cervical Cancer": [
-        "Abnormal bleeding", "Pelvic pain", "Pain during intercourse", "Foul-smelling discharge"
-    ]
-}
-female_cancers.update(male_cancers)  # Women can also have lung, brain, pancreatic, blood cancers etc.
+# ---- Patient Info ----
+name = st.text_input("Name")
+age = st.number_input("Age", min_value=1, max_value=120)
+gender = st.selectbox("Gender", ["Male", "Female", "Other"])
+location = st.text_input("City / Location")
+family_history = st.selectbox("Family history of cancer?", ["No", "Yes", "Don't know"])
+bp = st.checkbox("High Blood Pressure")
+diabetes = st.checkbox("Diabetes")
+heart = st.checkbox("Heart Issues")
 
-# -------------------------------
-# Streamlit UI
-# -------------------------------
-st.title("🧬 Cancer Symptom Checker")
-st.write("This tool helps identify possible cancer risks based on symptoms. Not a medical diagnosis!")
+st.markdown("---")
 
-# User Info
-name = st.text_input("Enter Name")
-age = st.number_input("Enter Age", 1, 120)
-gender = st.radio("Select Gender", ["Male", "Female"])
-location = st.text_input("Enter Location")
-polluted_area = st.checkbox("Is your area highly polluted or near Ganga basin?")
+# ---- Symptoms by Gender ----
+st.header("Select Symptoms")
 
-family_history = st.radio("Any family history of cancer?", ["Yes", "No"])
+symptoms = []
 
-# Show symptoms dynamically
+# ----- Male-specific cancers -----
 if gender == "Male":
-    symptom_db = male_cancers
-else:
-    symptom_db = female_cancers
+    st.subheader("Male-specific cancers")
 
-st.subheader("Select Your Symptoms")
-selected_symptoms = []
-for cancer, symptoms in symptom_db.items():
-    with st.expander(cancer):
-        for s in symptoms:
-            if st.checkbox(s):
-                selected_symptoms.append(s)
+    with st.expander("Prostate Cancer"):
+        if st.checkbox("Frequent urination, especially at night"): symptoms.append("prostate")
+        if st.checkbox("Difficulty urinating / weak stream"): symptoms.append("prostate")
+        if st.checkbox("Blood in urine or semen"): symptoms.append("prostate")
+        if st.checkbox("Pelvic/back pain"): symptoms.append("prostate")
 
-# Prediction Logic
-possible_cancers = [c for c, syms in symptom_db.items() if any(s in selected_symptoms for s in syms)]
+    with st.expander("Mouth Cancer"):
+        if st.checkbox("Non-healing mouth sore"): symptoms.append("mouth")
+        if st.checkbox("White/red patches in mouth"): symptoms.append("mouth")
+        if st.checkbox("Difficulty swallowing"): symptoms.append("mouth")
+        if st.checkbox("Voice changes / throat lump"): symptoms.append("mouth")
 
-if st.button("🔍 Predict"):
-    if possible_cancers:
-        st.success(f"### Based on your symptoms, possible cancer types: {', '.join(possible_cancers)}")
+# ----- Female-specific cancers -----
+if gender == "Female":
+    st.subheader("Female-specific cancers")
+
+    with st.expander("Breast Cancer"):
+        if st.checkbox("Breast lump or thickening"): symptoms.append("breast")
+        if st.checkbox("Change in breast size or shape"): symptoms.append("breast")
+        if st.checkbox("Nipple discharge or bleeding"): symptoms.append("breast")
+        if st.checkbox("Skin dimpling or redness on breast"): symptoms.append("breast")
+
+    with st.expander("Cervical Cancer"):
+        if st.checkbox("Abnormal vaginal bleeding or discharge"): symptoms.append("cervical")
+        if st.checkbox("Pelvic pain"): symptoms.append("cervical")
+        if st.checkbox("Pain during intercourse"): symptoms.append("cervical")
+
+    with st.expander("Ovarian Cancer"):
+        if st.checkbox("Abdominal bloating or swelling"): symptoms.append("ovarian")
+        if st.checkbox("Feeling full quickly when eating"): symptoms.append("ovarian")
+        if st.checkbox("Frequent urination"): symptoms.append("ovarian")
+        if st.checkbox("Pelvic pain or pressure"): symptoms.append("ovarian")
+
+# ----- Common to both genders -----
+st.subheader("Cancers common to all genders")
+
+with st.expander("Lung Cancer"):
+    if st.checkbox("Persistent cough / worsening cough"): symptoms.append("lung")
+    if st.checkbox("Coughing up blood"): symptoms.append("lung")
+    if st.checkbox("Shortness of breath / wheezing"): symptoms.append("lung")
+    if st.checkbox("Chest pain"): symptoms.append("lung")
+    if st.checkbox("Hoarseness / voice change"): symptoms.append("lung")
+
+with st.expander("Pancreatic Cancer"):
+    if st.checkbox("Jaundice (yellow skin/eyes)"): symptoms.append("pancreatic")
+    if st.checkbox("Abdominal/back pain"): symptoms.append("pancreatic")
+    if st.checkbox("Unexplained weight loss"): symptoms.append("pancreatic")
+    if st.checkbox("New diabetes onset"): symptoms.append("pancreatic")
+
+with st.expander("Blood Cancer"):
+    if st.checkbox("Night sweats / fever / chills"): symptoms.append("blood")
+    if st.checkbox("Frequent infections"): symptoms.append("blood")
+    if st.checkbox("Easy bruising/bleeding"): symptoms.append("blood")
+    if st.checkbox("Swollen lymph nodes"): symptoms.append("blood")
+    if st.checkbox("Bone pain"): symptoms.append("blood")
+
+with st.expander("Brain Cancer"):
+    if st.checkbox("Frequent/worsening headaches"): symptoms.append("brain")
+    if st.checkbox("Seizures"): symptoms.append("brain")
+    if st.checkbox("Vision problems"): symptoms.append("brain")
+    if st.checkbox("Balance/coordination issues"): symptoms.append("brain")
+    if st.checkbox("Personality or memory changes"): symptoms.append("brain")
+
+# ---- Risk Calculation ----
+def predict_cancer(symptoms, age, gender, family_history, location):
+    cancer_count = {}
+    for s in symptoms:
+        cancer_count[s] = cancer_count.get(s, 0) + 1
+
+    # Add modifiers
+    risk_score = 0
+    if age > 50: risk_score += 1
+    if family_history == "Yes": risk_score += 2
+    if "delhi" in location.lower() or "kanpur" in location.lower():
+        risk_score += 1  # polluted cities
+    if any(x in location.lower() for x in ["varanasi","patna","kolkata","lucknow"]):
+        risk_score += 1  # ganga belt risk
+
+    return cancer_count, risk_score
+
+if st.button("Predict Possible Cancer Type"):
+    cancers, score = predict_cancer(symptoms, age, gender, family_history, location)
+    
+    if not cancers:
+        st.warning("No significant cancer-related symptoms selected.")
     else:
-        st.info("No strong cancer indicators found. Please consult a doctor if symptoms persist.")
-
-# -------------------------------
-# PDF Report Generation
-# -------------------------------
-def generate_pdf():
-    pdf = FPDF()
-    pdf.add_page()
-    pdf.set_font("Arial", "B", 16)
-    pdf.cell(200, 10, "Cancer Symptom Report", ln=True, align="C")
-
-    pdf.set_font("Arial", size=12)
-    pdf.ln(10)
-    pdf.cell(200, 10, f"Name: {name}", ln=True)
-    pdf.cell(200, 10, f"Age: {age}", ln=True)
-    pdf.cell(200, 10, f"Gender: {gender}", ln=True)
-    pdf.cell(200, 10, f"Location: {location}", ln=True)
-    pdf.cell(200, 10, f"Pollution Risk Area: {'Yes' if polluted_area else 'No'}", ln=True)
-    pdf.cell(200, 10, f"Family History: {family_history}", ln=True)
-
-    pdf.ln(5)
-    pdf.set_font("Arial", "B", 14)
-    pdf.cell(200, 10, "Selected Symptoms:", ln=True)
-    pdf.set_font("Arial", size=12)
-    for s in selected_symptoms:
-        pdf.cell(200, 8, f"- {s}", ln=True)
-
-    pdf.ln(5)
-    pdf.set_font("Arial", "B", 14)
-    pdf.cell(200, 10, "Possible Cancer Types:", ln=True)
-    pdf.set_font("Arial", size=12)
-    if possible_cancers:
-        for c in possible_cancers:
-            pdf.cell(200, 8, f"- {c}", ln=True)
-    else:
-        pdf.cell(200, 8, "No significant risk detected.", ln=True)
-
-    pdf.ln(10)
-    pdf.set_font("Arial", "I", 11)
-    pdf.multi_cell(0, 10, "Disclaimer: This is not a medical diagnosis. Please consult a healthcare professional for further evaluation.")
-
-    return pdf.output(dest="S").encode("latin-1")
-
-if st.button("📄 Download PDF Report"):
-    if name and age:
-        pdf_data = generate_pdf()
-        st.download_button("Download Report", data=pdf_data, file_name="cancer_report.pdf", mime="application/pdf")
-    else:
-        st.error("Please enter your Name and Age before downloading the report.")
+        st.subheader(f"Prediction for {name}")
+        st.write("### Possible Cancer Types (based on symptoms):")
+        for c, count in sorted(cancers.items(), key=lambda x: x[1], reverse=True):
+            st.write(f"- {c.capitalize()} (symptom matches: {count})")
+        
+        if score <= 2: risk = "Low Risk"
+        elif score <= 4: risk = "Medium Risk"
+        else: risk = "High Risk"
+        
+        st.success(f"Overall Risk Level: {risk}")
