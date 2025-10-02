@@ -56,7 +56,18 @@ all_symptoms = [
     "Gradual loss of sensation or movement in limb",
     "Difficulty with balance or walking",
     "Speech difficulties",
-    "Changes in personality, behavior, or concentration"
+    "Changes in personality, behavior, or concentration",
+
+    # Female-specific
+    "Lump in breast",
+    "Nipple discharge",
+    "Breast pain",
+    "Skin dimpling",
+    "Change in breast size",
+    "Abnormal bleeding",
+    "Pelvic pain",
+    "Pain during intercourse",
+    "Foul-smelling discharge"
 ]
 
 # -------------------------------
@@ -115,29 +126,62 @@ symptom_to_cancer = {
     "Gradual loss of sensation or movement in limb": "Brain Cancer",
     "Difficulty with balance or walking": "Brain Cancer",
     "Speech difficulties": "Brain Cancer",
-    "Changes in personality, behavior, or concentration": "Brain Cancer"
+    "Changes in personality, behavior, or concentration": "Brain Cancer",
+
+    # Female-specific
+    "Lump in breast": "Breast Cancer",
+    "Nipple discharge": "Breast Cancer",
+    "Breast pain": "Breast Cancer",
+    "Skin dimpling": "Breast Cancer",
+    "Change in breast size": "Breast Cancer",
+    "Abnormal bleeding": "Cervical Cancer",
+    "Pelvic pain": "Cervical Cancer",
+    "Pain during intercourse": "Cervical Cancer",
+    "Foul-smelling discharge": "Cervical Cancer"
 }
 
 # -------------------------------
 # Streamlit UI
 # -------------------------------
 st.title("🧬 Cancer Symptom Checker")
-st.write("Select the symptoms you are experiencing. After selecting, click 'Show Possible Cancer Types'.")
+st.write("Select your medical details and symptoms. The app will suggest possible cancer types.")
 
-selected_symptoms = st.multiselect("Select your symptoms", all_symptoms)
+# User Info
+age = st.number_input("Age", 1, 120)
+gender = st.radio("Gender", ["Male", "Female"])
+blood_pressure = st.radio("Do you have high blood pressure?", ["Yes", "No"])
+diabetes = st.radio("Do you have diabetes?", ["Yes", "No"])
+heart_issues = st.radio("Do you have any heart issues?", ["Yes", "No"])
+family_history = st.radio("Any family history of cancer?", ["Yes", "No"])
+
+# Show only relevant symptoms based on gender
+if gender == "Male":
+    filtered_symptoms = [s for s in all_symptoms if "breast" not in s.lower() and "cervical" not in s.lower() and "pelvic" not in s.lower()]
+else:
+    filtered_symptoms = all_symptoms
+
+selected_symptoms = st.multiselect("Select your symptoms", filtered_symptoms)
 
 # Prediction Logic
 if st.button("🔍 Show Possible Cancer Types"):
     if not selected_symptoms:
         st.warning("Please select at least one symptom.")
     else:
-        # Map selected symptoms to cancer types
+        # Map symptoms to cancer types
         cancer_count = {}
         for s in selected_symptoms:
             c_type = symptom_to_cancer.get(s)
             if c_type:
+                # Filter by gender-specific cancers
+                if gender == "Male" and c_type in ["Breast Cancer", "Cervical Cancer"]:
+                    continue
                 cancer_count[c_type] = cancer_count.get(c_type, 0) + 1
-        
+
+        # Factor family history as increasing relevance
+        if family_history == "Yes":
+            for c in cancer_count:
+                cancer_count[c] += 1  # simple weight
+
         if cancer_count:
             st.success("### Possible Cancer Types Based on Your Symptoms:")
             for cancer, count in sorted(cancer_count.items(), key=lambda x: x[1], reverse=True):
